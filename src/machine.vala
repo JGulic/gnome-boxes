@@ -238,7 +238,7 @@ private abstract class Boxes.Machine: Boxes.CollectionItem, Boxes.IPropertiesPro
 
 private class Boxes.MachineActor: Boxes.UI {
     public override Clutter.Actor actor { get { return box; } }
-    public Clutter.Box box;
+    public Clutter.Actor box;
 
     private Clutter.BindConstraint yconstraint;
     private GtkClutter.Texture screenshot;
@@ -263,7 +263,8 @@ private class Boxes.MachineActor: Boxes.UI {
         var layout = new Clutter.BoxLayout ();
         layout.vertical = true;
         layout.spacing = 10;
-        box = new Clutter.Box (layout);
+        box = new Clutter.Actor ();
+        box.set_layout_manager (layout);
 
         screenshot = new GtkClutter.Texture ();
         screenshot.name = "screenshot";

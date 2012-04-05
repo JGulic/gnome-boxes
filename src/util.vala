@@ -244,16 +244,19 @@ namespace Boxes {
     }
 
     public void actor_remove (Clutter.Actor actor) {
-        var container = actor.get_parent () as Clutter.Container;
+        var parent = actor.get_parent ();
 
-        if (container == null)
+        if (parent == null)
             return;
 
-        container.remove (actor);
+        parent.remove_child (actor);
     }
 
     public void actor_pin (Clutter.Actor actor) {
-        actor.set_geometry (actor.get_geometry ());
+        actor.set_x (actor.get_x ());
+        actor.set_y (actor.get_y ());
+        actor.set_width (actor.get_width ());
+        actor.set_height (actor.get_height ());
     }
 
     public void actor_unpin (Clutter.Actor actor) {
