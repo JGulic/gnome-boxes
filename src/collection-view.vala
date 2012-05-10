@@ -6,7 +6,7 @@ private class Boxes.CollectionView: Boxes.UI {
 
     private App app;
     private GtkClutter.Actor gtkactor;
-    private Clutter.Box over_boxes; // a box on top of boxes list
+    private Clutter.Actor over_boxes; // a box on top of boxes list
 
     private Category _category;
     public Category category {
@@ -37,12 +37,14 @@ private class Boxes.CollectionView: Boxes.UI {
     }
 
     public void set_over_boxes (Clutter.Actor actor, bool center = false) {
-        if (center)
-            over_boxes.pack (actor,
-                             "x-align", Clutter.BinAlignment.CENTER,
-                             "y-align", Clutter.BinAlignment.CENTER);
+        if (center){
+            over_boxes.add_child (actor);
+            actor.set_layout_manager(new Clutter.BinLayout (Clutter.BinAlignment.CENTER, 
+                                                            Clutter.BinAlignment.CENTER));
+        }
+            
         else
-            over_boxes.pack (actor);
+            over_boxes.add_child (actor);
 
         actor_add (over_boxes, app.stage);
     }
@@ -242,7 +244,9 @@ private class Boxes.CollectionView: Boxes.UI {
 
         gtkactor = new GtkClutter.Actor.with_contents (scrolled_window);
 
-        over_boxes = new Clutter.Box (new Clutter.BinLayout (Clutter.BinAlignment.FILL, Clutter.BinAlignment.FILL));
+        over_boxes = new Clutter.Actor ();
+        actor.set_layout_manager(new Clutter.BinLayout (Clutter.BinAlignment.CENTER, 
+                                                        Clutter.BinAlignment.CENTER));
         over_boxes.add_constraint_with_name ("top-box-size",
                                              new Clutter.BindConstraint (gtkactor, BindCoordinate.SIZE, 0));
         over_boxes.add_constraint_with_name ("top-box-position",
