@@ -25,7 +25,7 @@ private class Boxes.App: Boxes.UI {
     public GtkClutter.Embed embed;
     public Clutter.Stage stage;
     public Clutter.State state;
-    public Clutter.Box box; // the whole app box
+    public Clutter.Actor actor_box; // the whole app box
     public CollectionItem current_item; // current object/vm manipulated
     public Topbar topbar;
     public Notificationbar notificationbar;
@@ -362,9 +362,10 @@ private class Boxes.App: Boxes.UI {
         window.key_press_event.connect (on_key_pressed);
 
         box_table = new Clutter.TableLayout ();
-        box = new Clutter.Box (box_table);
-        box.add_constraint (new Clutter.BindConstraint (stage, BindCoordinate.SIZE, 0));
-        stage.add_actor (box);
+        actor_box = new Clutter.Actor ();
+        actor_box.set_layout_manager (box_table);
+        actor_box.add_constraint (new Clutter.BindConstraint (stage, BindCoordinate.SIZE, 0));
+        stage.add_actor (actor_box);
 
         sidebar = new Sidebar (this);
         view = new CollectionView (this, sidebar.category);
@@ -395,12 +396,12 @@ private class Boxes.App: Boxes.UI {
 
     private void set_main_ui_state (string clutter_state) {
         notebook.page = Boxes.AppPage.MAIN;
-        box.set_layout_manager (box_table);
+        actor_box.set_layout_manager (box_table);
         state.set_state (clutter_state);
     }
 
     public override void ui_state_changed () {
-        box.set_layout_manager (box_table);
+        actor_box.set_layout_manager (box_table);
         action_fullscreen.set_enabled (ui_state == UIState.DISPLAY);
         action_properties.set_enabled (ui_state == UIState.DISPLAY);
 
@@ -410,7 +411,7 @@ private class Boxes.App: Boxes.UI {
 
         switch (ui_state) {
         case UIState.DISPLAY:
-            box.set_layout_manager (new Clutter.FixedLayout ());
+            actor_box.set_layout_manager (new Clutter.FixedLayout ());
             state.set_state (fullscreen ? "display-fullscreen" : "display");
             break;
 
@@ -425,15 +426,21 @@ private class Boxes.App: Boxes.UI {
             actor_remove (topbar.actor);
             actor_remove (sidebar.actor);
             actor_remove (view.actor);
-            box.pack (topbar.actor, "column", 0, "row", 0,
-                      "x-expand", false, "y-expand", false);
-            box.pack (view.actor, "column", 0, "row", 1,
-                      "x-expand", true, "y-expand", true);
+             
+            box_table = new Clutter.TableLayout ();
+            actor_box.set_layout_manager (box_table);            
+
+            box_table.pack (topbar.actor, 0, 0);
+            box_table.set_expand (topbar.actor, false, false);
+
+            box_table.pack (view.actor, 0, 1);
+            box_table.set_expand (view.actor, true, true);
+
             if (current_item is Machine) {
                 var machine = current_item as Machine;
 
                 machine.disconnect_display ();
-                machine.update_screenshot.begin ();
+               ;machine.update_screenshot.begin ();
             }
             fullscreen = false;
             break;
@@ -443,12 +450,20 @@ private class Boxes.App: Boxes.UI {
             actor_remove (topbar.actor);
             actor_remove (sidebar.actor);
             actor_remove (view.actor);
-            box.pack (topbar.actor, "column", 0, "row", 0, "column-span", 2,
-                      "x-expand", false, "y-expand", false);
-            box.pack (sidebar.actor, "column", 0, "row", 1,
-                      "x-expand", false, "y-expand", true);
-            box.pack (view.actor, "column", 1, "row", 1,
-                      "x-expand", true, "y-expand", true);
+
+            box_table = new Clutter.TableLayout();
+            actor_box.set_layout_manager (box_table);
+
+            box_table.pack (topbar.actor, 0, 0);
+            box_table.set_span (topbar.actor, 2, 0);
+            box_table.set_expand (topbar.actor, false, false);
+            
+            box_table.pack (sidebar.actor, 0, 1);
+            box_table.set_expand (sidebar.actor, false, true);
+   
+            box_table.pack (view.actor, 1, 1);
+            box_table.set_expand (view.actor, true, true);
+     
             set_main_ui_state ("collection");
             break;
 
